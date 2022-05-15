@@ -1,4 +1,4 @@
-# KeySave
+# SaveKey
 A Command Line Tool wich can save and load strings. Like a notepad, just more minialistic.
 
 ## Usage
@@ -32,5 +32,5 @@ If you dont want to write `--save` or `--load`, then you can write `-s` or `-l`.
 
 ## Warnings
 
-- **KeySave has been developed on and for Linux. It has never been tested for Windows.**
-- **KeySave stores the Values as a plain Text file (~/.savekey/master.json). It is not reccomendet to store verry private data with KeySave** 
+- **SaveKey has been developed on and for Linux. It has never been tested for Windows.**
+- **SaveKey stores the Values in plain Text files (~/.savekey/*.json). It is not reccomended to store verry private data with KeySave** 
