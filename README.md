@@ -15,3 +15,8 @@ savekey --load API_key
 ```
 
 If you dont want to write `--save` or `--load`, then you can write `-s` or `-l`.
+
+## Warnings
+
+* **KeySave has been developed on and for Linux. It has not been tested for Windows.**
+* **KeySave stores the Values as a plain Text file (~/.savekey/master.json). It is not reccomendet to store verry private data with KeySave** 
