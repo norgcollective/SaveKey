@@ -40,7 +40,7 @@ def addkey(newkey, newvalue):
 
     #Then extend the Dictionary
     if bool(keymap.get(newkey)):
-        if input('Key "' + newkey + '" already exists. Wont to override? (Y/n) ') == 'Y':
+        if input('Key "' + newkey + '" already exists. Wont to override? (Y/n) ') in ['Y', 'y']:
             keymap[newkey] = newvalue
         else:
             return 0
@@ -53,6 +53,28 @@ def addkey(newkey, newvalue):
     f.close()
 
     print('Saved Key "' + newkey + '".')
+
+def delkey(keyname):
+    # First create a dictionary based on the old file.
+    f = open(os.environ['HOME'] + '/.savekey/master.json','r')
+    oldcontent = f.read()
+    f.close()
+
+    keymap = json.loads(oldcontent)
+
+    if bool(keymap.get(keyname)):
+        keymap.pop(keyname)
+    else:
+        print('Key was already deleted.')
+        return 0
+
+
+    # Write the new Dictionary into the file
+    f = open(os.environ['HOME'] + '/.savekey/master.json','w')
+    f.write(json.dumps(keymap))
+    f.close()
+
+    print('Deleted Key "' + keyname + '"')
 
 def printkey(keyname):
     f = open(os.environ['HOME'] + '/.savekey/master.json','r')
@@ -72,6 +94,9 @@ def main(argv):
     elif len(argv) == 3:
         if argv[1] == '-l' or argv[1] == '--load':
             printkey(argv[2])
+        elif argv[1] == '-d' or argv[1] == '--delete':
+            if input('Are you sure you want to delete the data of "' + argv[2] + '"? (Y/n) ') in ['Y', 'y']:
+                delkey(argv[2])
     elif len(argv) == 4:
         if argv[1] == '-s' or argv[1] == '--save':
             addkey(argv[2], argv[3])
