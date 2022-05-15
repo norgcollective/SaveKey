@@ -20,13 +20,14 @@ If you dont want to write `--save` or `--load`, then you can write `-s` or `-l`.
 
 | Short Parameter | Long Paramter | Function | Warnings |
 |--|--|--|--|
-| -? | --help     | Show a help like this |  |
-| -v | --version  | Terminates the application after the Welcome-screen |  |
-| -s | --save     | Saves the Key |  |
-| -l | --load     | Loads a key |  |
-| -d | --delete   | Deletes a key | - **NOT YET IMPLEMENTED** |
-| -r | --reset    | Deletes any Key in the master.json file | - **NOT YET IMPLEMENTED** |
-| -p | --password | Locks the -r Parameter with a password. | - **NOT YET IMPLEMENTED** <br/> - **PASSWORD SAVED IN PLAIN TEXT** |
+| -?   | --help      | Show a help like this |  |
+| -v   | --version   | Terminates the application after the Welcome-screen |  |
+| -s   | --save      | Saves the Key |  |
+| -l   | --load      | Loads a key |  |
+| -d   | --delete    | Deletes a key | - **NOT YET IMPLEMENTED** |
+| -r   | --reset     | Deletes any Key in the master.json file | - **NOT YET IMPLEMENTED** |
+| -p   | --password  | Locks the -r Parameter with a password. | - **NOT YET IMPLEMENTED** <br/> - **PASSWORD SAVED IN PLAIN TEXT** |
+| -gui | --interface | Starts the Programm with an UI. | - **NOT YET IMPLEMENTED** |
 
 ## Warnings
 
