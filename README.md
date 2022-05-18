@@ -25,11 +25,23 @@ If you dont want to write `--save` or `--load`, then you can write `-s` or `-l`.
 | -s   | --save       | Saves the Key |  |
 | -l   | --load       | Loads a key |  |
 | -d   | --delete     | Deletes a key |  |
-| -r   | --reset      | Deletes any Key in the master.json file | - **NOT YET IMPLEMENTED** |
+| -r   | --reset      | Deletes any Key in the master.json file |  |
 | -p   | --password   | Locks the -r Parameter with a password. | - **NOT YET IMPLEMENTED** <br/> - **PASSWORD SAVED IN PLAIN TEXT** |
 | -chf | --switchfile | Saves into a different File instead of `master.json`. | - **NOT YET IMPLEMENTED** |
 | -gui | --interface  | Starts the Programm with an UI. | - **NOT YET IMPLEMENTED** |
-|      | --list       | Lists all keys. | - **NOT YETIMPLEMENTED** |
+|      | --list       | Lists all keys. | - **NOT YET IMPLEMENTED** |
+
+#### Detailed Parameter List
+##### Help
+##### Version
+##### Save a key   
+##### Load a key    
+##### Delete a key
+##### Reset Keybook
+##### Add Pasword `NOT YET IMPLEMENTED`
+##### Save to a differend file `NOT YET IMPLEMENTED`
+##### Activate Interface `MAY BEIMPLEMENTED`
+##### List all keys. `NOT YET IMPLEMENTED`
 
 ## Warnings
 
