@@ -62,19 +62,25 @@ def delkey(keyname):
 
     keymap = json.loads(oldcontent)
 
-    if bool(keymap.get(keyname)):
-        keymap.pop(keyname)
+    if keyname != 'master.json.deletekey':
+        if bool(keymap.get(keyname)):
+            keymap.pop(keyname)
+        else:
+            print('Key was already deleted.')
+            return 0
+
+        # Write the new Dictionary into the file
+        f = open(os.environ['HOME'] + '/.savekey/master.json','w')
+        f.write(json.dumps(keymap))
+        f.close()
+
+        print('Deleted Key "' + keyname + '"')
     else:
-        print('Key was already deleted.')
-        return 0
+        keymap = str('\0')
+        os.delete(os.environ['HOME'] + '/.savekey/master.json')
+        if not os.path.exists(os.environ['HOME'] + '/.savekey/master.json'): print('Deleted "master.json"')
 
 
-    # Write the new Dictionary into the file
-    f = open(os.environ['HOME'] + '/.savekey/master.json','w')
-    f.write(json.dumps(keymap))
-    f.close()
-
-    print('Deleted Key "' + keyname + '"')
 
 def printkey(keyname):
     f = open(os.environ['HOME'] + '/.savekey/master.json','r')
@@ -88,18 +94,20 @@ def main(argv):
     if len(argv) == 1:
         print('savekey needs at least one parameter.\nExecute savekey -? to get more informations.')
     elif len(argv) == 2:
-        if argv[1] == '-v' or argv[1] == '--version': exit(0)
-        elif argv[1] == '-?' or argv[1] == '-h' or argv[1] == '--help': print(helpstr)
-        else: print('Invalid Argument' + str(argv[1]))
+        if argv[1] in ['-v', '--version']: exit(0)
+        elif argv[1] in ['-?', '-h', '--help']: print(helpstr)
+        elif argv[1] in ['-r' ,'--reset']: delkey('master.json.deletekey')
+        else: print('Invalid Argument ' + str(argv[1]))
     elif len(argv) == 3:
-        if argv[1] == '-l' or argv[1] == '--load':
-            printkey(argv[2])
-        elif argv[1] == '-d' or argv[1] == '--delete':
-            if input('Are you sure you want to delete the data of "' + argv[2] + '"? (Y/n) ') in ['Y', 'y']:
-                delkey(argv[2])
+        if argv[1] in ['-l','--load']:printkey(argv[2])
+        elif argv[1] == ['-d','--delete']:
+            if input('Are you sure you want to delete the data of "' + argv[2] + '"? (Y/n) ') in ['Y', 'y']: delkey(argv[2])
     elif len(argv) == 4:
         if argv[1] == '-s' or argv[1] == '--save':
             addkey(argv[2], argv[3])
     else:
         print('Invalid list of arguments.\nExecute savekey -? to get more informations.')
     return 0
+
+
+

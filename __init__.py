@@ -92,4 +92,4 @@ except:
 
 
 # Now when anything is done, we can say Hello to the user.
-print(name + ' ' + version) 
+print(name + ' [' + version + '] ') 
