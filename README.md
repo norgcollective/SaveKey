@@ -29,6 +29,7 @@ If you dont want to write `--save` or `--load`, then you can write `-s` or `-l`.
 | -p   | --password   | Locks the -r Parameter with a password. | - **NOT YET IMPLEMENTED** <br/> - **PASSWORD SAVED IN PLAIN TEXT** |
 | -chf | --switchfile | Saves into a different File instead of `master.json`. | - **NOT YET IMPLEMENTED** |
 | -gui | --interface  | Starts the Programm with an UI. | - **NOT YET IMPLEMENTED** |
+|      | --list       | Lists all keys. | - **NOT YETIMPLEMENTED** |
 
 ## Warnings
 
