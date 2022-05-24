@@ -25,11 +25,11 @@ If you dont want to write `--save` or `--load`, then you can write `-s` or `-l`.
 | -s   | --save       | Saves the Key |  |
 | -l   | --load       | Loads a key |  |
 | -d   | --delete     | Deletes a key |  |
-| -r   | --reset      | Deletes any Key in the master.json file | - **NOT YET IMPLEMENTED** |
-| -p   | --password   | Locks the -r Parameter with a password. | - **NOT YET IMPLEMENTED** <br/> - **PASSWORD SAVED IN PLAIN TEXT** |
-| -chf | --switchfile | Saves into a different File instead of `master.json`. | - **NOT YET IMPLEMENTED** |
-| -gui | --interface  | Starts the Programm with an UI. | - **NOT YET IMPLEMENTED** |
-|      | --list       | Lists all keys. | - **NOT YETIMPLEMENTED** |
+| -r   | --reset      | Deletes any Key in the master.json file | - **Not yet implemented** |
+| -p   | --password   | Locks the -r Parameter with a password. | - **Not yet implemented** <br/> - **Password is saved in plain text** |
+| -chf | --switchfile | Saves into a different File instead of `master.json`. | - **Not yet implemented** |
+| -gui | --interface  | Starts the Programm with an UI. | - **Not yet implemented** |
+|      | --list       | Lists all keys. | - **Not yet implemented** |
 
 **For more information visit the [Savekey Wiki](https://github.com/heschy2/SaveKey/wiki)
 
