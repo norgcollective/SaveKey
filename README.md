@@ -31,7 +31,7 @@ If you dont want to write `--save` or `--load`, then you can write `-s` or `-l`.
 | -gui | --interface  | Starts the Programm with an UI. | - **Not yet implemented** |
 |      | --list       | Lists all keys. | - **Not yet implemented** |
 
-**For more information visit the [Savekey Wiki](https://github.com/heschy2/SaveKey/wiki)
+**For more information visit the [Savekey Wiki](https://github.com/heschy2/SaveKey/wiki)**
 
 ## Warnings
 
