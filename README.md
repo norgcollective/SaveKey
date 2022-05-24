@@ -46,5 +46,6 @@ Parameters:
 
 ## Warnings
 
+- **Savekey has been developed as a two-file system. for github it has been compressed into one file. This might produce errors**
 - **SaveKey has been developed on and for Linux. It has never been tested for Windows.**
 - **SaveKey stores the Values in plain Text files (~/.savekey/*.json). It is not reccomended to store verry private data with KeySave** 
