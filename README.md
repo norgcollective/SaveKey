@@ -31,18 +31,7 @@ If you dont want to write `--save` or `--load`, then you can write `-s` or `-l`.
 | -gui | --interface  | Starts the Programm with an UI. | - **NOT YET IMPLEMENTED** |
 |      | --list       | Lists all keys. | - **NOT YETIMPLEMENTED** |
 
-#### Detailed Parameter List
-##### Help
-Parameters:
-##### Version
-##### Save a key   
-##### Load a key    
-##### Delete a key
-##### Reset Keybook
-##### Add Pasword `NOT YET IMPLEMENTED`
-##### Save to a differend file `NOT YET IMPLEMENTED`
-##### Activate Interface `MAY BEIMPLEMENTED`
-##### List all keys. `NOT YET IMPLEMENTED`
+**For more information visit the [Savekey Wiki](https://github.com/heschy2/SaveKey/wiki)
 
 ## Warnings
 
