@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # _init_.py
 #
 # Copyright 2022 Henry Schynol
@@ -18,6 +19,16 @@
 import os
 import json
 
+
+version = str('Development Version 1.0 - OP1')
+name = str('HeSchy SaveKey')
+
+debuginfo = {
+    'savekeyversion':version,
+    'savekeyauthor':'Henry Schynol',
+    'savekeydevstate':'development'
+}
+
 def is_json(myjson):
   try:
     json.loads(myjson)
@@ -26,8 +37,6 @@ def is_json(myjson):
   else:
       return True
 
-version = str('Development Version')
-name = str('HeSchy SaveKey')
 
 log = {
     "mkdir": False,
@@ -61,12 +70,12 @@ try:
     f.close()
     if not bool(content):
         f = open(os.environ['HOME'] + '/.savekey/master.json', 'w')
-        f.write(json.dumps({'savekeyversion':version}))
+        f.write(json.dumps(debuginfo))
         f.close()
     else:
         if not is_json(content):
             f = open(os.environ['HOME'] + '/.savekey/master.json', 'w')
-            f.write(json.dumps({'savekeyversion':version}))
+            f.write(json.dumps(debuginfo))
             f.close()
         else:
             keymap = json.loads(content)

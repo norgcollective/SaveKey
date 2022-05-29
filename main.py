@@ -1,3 +1,12 @@
+#!/usr/bin/python3
+version = str('Development Version 1.0 - OP1')
+
+debuginfo = {
+    'savekeyversion':version,
+    'savekeyauthor':'Henry Schynol',
+    'savekeydevstate':'development'
+}
+
 # main.py
 #
 # Copyright 2022 Henry Schynol
@@ -19,6 +28,7 @@ from sys import exit
 import os
 import json
 
+
 def is_json(myjson):
   try:
     json.loads(myjson)
@@ -27,8 +37,12 @@ def is_json(myjson):
   else:
       return True
 
-helpstr = """[savekey -s KEY_NAME KEY_VALUE] saves KEY_VALUE as KEY_NAME
-[savekey -l KEY_NAME]           prints the value of KEY_NAME"""
+helpstr = """savekey -s KEY_NAME KEY_VALUE saves KEY_VALUE as KEY_NAME
+savekey -l KEY_NAME           prints the value of KEY_NAME
+savekey -d KEY_NAME           deltes the key named KEY_NAME
+savekey --list                lists all key-value pairs
+savekey -r                    deletes all keys, except the debug keys
+savekey -v                    Terminates Programm after printing the welcomescreen"""
 
 def addkey(newkey, newvalue):
     # First create a dictionary based on the old file.
@@ -40,7 +54,7 @@ def addkey(newkey, newvalue):
 
     #Then extend the Dictionary
     if bool(keymap.get(newkey)):
-        if input('Key "' + newkey + '" already exists. Wont to override? (Y/n) ') in ['Y', 'y']:
+        if input('Key "' + newkey + '" already exists. Want to override? (Y/n) ') in ['Y', 'y']:
             keymap[newkey] = newvalue
         else:
             return 0
@@ -62,7 +76,7 @@ def delkey(keyname):
 
     keymap = json.loads(oldcontent)
 
-    if keyname != 'master.json.deletekey':
+    if keyname != 'master.json.deleteall': # --delete was executed.
         if bool(keymap.get(keyname)):
             keymap.pop(keyname)
         else:
@@ -75,10 +89,12 @@ def delkey(keyname):
         f.close()
 
         print('Deleted Key "' + keyname + '"')
-    else:
-        keymap = str('\0')
-        os.delete(os.environ['HOME'] + '/.savekey/master.json')
-        if not os.path.exists(os.environ['HOME'] + '/.savekey/master.json'): print('Deleted "master.json"')
+    else: # --reset has been executed
+        f = open(os.environ['HOME'] + '/.savekey/master.json','w')
+        f.write(json.dumps(debuginfo))
+        f.close()
+
+        print('Deleted notebook.')
 
 
 
@@ -87,7 +103,12 @@ def printkey(keyname):
     keymap = json.loads(f.read())
     f.close()
 
-    print("Key '" + keyname + "' contains '" + keymap[keyname] + "'. ")
+
+    if keyname != 'master.json.printall':
+        print("Key '" + keyname + "' contains '" + keymap[keyname] + "'. ")
+    else:
+        for i in keymap:
+            print("Key '" + i + "' provides the value '" + str(keymap[i]) + "'")
     return 0
 
 def main(argv):
@@ -96,18 +117,23 @@ def main(argv):
     elif len(argv) == 2:
         if argv[1] in ['-v', '--version']: exit(0)
         elif argv[1] in ['-?', '-h', '--help']: print(helpstr)
-        elif argv[1] in ['-r' ,'--reset']: delkey('master.json.deletekey')
+        elif argv[1] in ['-r' ,'--reset','master.json.deleteall']:
+            if input("Are you sure you want to delete any key in 'master.json' ? (Y/n) ") in ['Y', 'y']: delkey('master.json.deleteall')
+        elif argv[1] in ['--list', '--showall', '--printall', 'master.json.printall']: printkey('master.json.printall')
         else: print('Invalid Argument ' + str(argv[1]))
     elif len(argv) == 3:
         if argv[1] in ['-l','--load']:printkey(argv[2])
         elif argv[1] == ['-d','--delete']:
             if input('Are you sure you want to delete the data of "' + argv[2] + '"? (Y/n) ') in ['Y', 'y']: delkey(argv[2])
+        else: print('Invalid list of arguments.\nExecute savekey -? to get more informations.')
     elif len(argv) == 4:
         if argv[1] == '-s' or argv[1] == '--save':
             addkey(argv[2], argv[3])
+        else: print('Invalid list of arguments.\nExecute savekey -? to get more informations.')
     else:
         print('Invalid list of arguments.\nExecute savekey -? to get more informations.')
     return 0
 
-
-
+if __name__ == '__main__':
+    from sys import argv as args
+    main(args)
