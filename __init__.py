@@ -18,13 +18,14 @@
 
 import os
 import json
-
+import sys
 
 version = str('Development Version 1.0 - OP1')
 name = str('HeSchy SaveKey')
 
 debuginfo = {
-    'savekeyversion':version,
+    'savekeystartuplog': str(os.environ['HOME'] + '/.savekey/startup.log'),
+    'savekeyversion': str(version),
     'savekeyauthor':'Henry Schynol',
     'savekeydevstate':'development'
 }
@@ -93,12 +94,18 @@ except FileNotFoundError:
 
 # Now we have to save the log.
 try:
-    f = open(os.environ['HOME'] + '/.savekey/startup.log', 'w')
+    f = open(debuginfo['savekeystartuplog'])
     f.write(json.dumps(log))
     f.close()
 except:
     exit(1)
 
 
-# Now when anything is done, we can say Hello to the user.
-print(name + ' [' + version + '] ') 
+# Now when anything is done, we can say Hello to the user, but ONLY if the welcome-screen should be printed.
+if len(sys.argv) == 2:
+    if '-showlog' in sys.argv:
+        for i in log:
+            print('Key: ' + i + ' | Value: ' log[i])
+        print('[Log] End of log.json')
+    if '-checkonly' not in sys.argv: print(name + ' [' + version + '] ')
+    

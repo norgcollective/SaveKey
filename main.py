@@ -1,8 +1,14 @@
 #!/usr/bin/python3
+
+import sys
+import os
+import json
+
 version = str('Development Version 1.0 - OP1')
 
 debuginfo = {
-    'savekeyversion':version,
+    'savekeystartuplog': str(os.environ['HOME'] + '/.savekey/startup.log'),
+    'savekeyversion': str(version),
     'savekeyauthor':'Henry Schynol',
     'savekeydevstate':'development'
 }
@@ -23,11 +29,6 @@ debuginfo = {
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-from sys import exit
-import os
-import json
-
 
 def is_json(myjson):
   try:
@@ -97,6 +98,12 @@ def delkey(keyname):
         print('Deleted notebook.')
 
 
+def getkey(keyname):
+    f = open(os.environ['HOME'] + '/.savekey/master.json','r')
+    keymap = json.loads(f.read())
+    f.close()
+
+    return str(keymap[keyname])
 
 def printkey(keyname):
     f = open(os.environ['HOME'] + '/.savekey/master.json','r')
@@ -112,28 +119,38 @@ def printkey(keyname):
     return 0
 
 def main(argv):
-    if len(argv) == 1:
-        print('savekey needs at least one parameter.\nExecute savekey -? to get more informations.')
-    elif len(argv) == 2:
-        if argv[1] in ['-v', '--version']: exit(0)
-        elif argv[1] in ['-?', '-h', '--help']: print(helpstr)
-        elif argv[1] in ['-r' ,'--reset','master.json.deleteall']:
-            if input("Are you sure you want to delete any key in 'master.json' ? (Y/n) ") in ['Y', 'y']: delkey('master.json.deleteall')
-        elif argv[1] in ['--list', '--showall', '--printall', 'master.json.printall']: printkey('master.json.printall')
-        else: print('Invalid Argument ' + str(argv[1]))
-    elif len(argv) == 3:
-        if argv[1] in ['-l','--load']:printkey(argv[2])
-        elif argv[1] == ['-d','--delete']:
-            if input('Are you sure you want to delete the data of "' + argv[2] + '"? (Y/n) ') in ['Y', 'y']: delkey(argv[2])
-        else: print('Invalid list of arguments.\nExecute savekey -? to get more informations.')
-    elif len(argv) == 4:
-        if argv[1] == '-s' or argv[1] == '--save':
-            addkey(argv[2], argv[3])
-        else: print('Invalid list of arguments.\nExecute savekey -? to get more informations.')
-    else:
-        print('Invalid list of arguments.\nExecute savekey -? to get more informations.')
+    try:
+        if len(argv) == 1:
+            infotext =  'savekey needs at least one parameter.\nExecute savekey -? to get more informations.'
+            if getkey('savekeycmdguimgr') == 'cdialog':
+                os.system("dialog --erase-on-exit --title 'Error' --msgbox '" + infotext + "' 6 30")
+            elif getkey('savekeycmdguimgr') == 'zenity':
+                os.system("zenity --info --text='" + infotext + "' --title='Argument Error'")
+        elif len(argv) == 2:
+            if argv[1] in ['-v', '-V', '--version']: exit(0)
+            elif argv[1] in [ '-h', '-H', '--help']: print(helpstr)
+            elif argv[1] in ['-r' , '-R','--reset','master.json.deleteall']:
+                if input("Are you sure you want to delete any key in 'master.json' ? (Y/n) ") in ['Y', 'y']: delkey('master.json.deleteall')
+            elif argv[1] in ['--list', '--showall', '--printall', 'master.json.printall']: printkey('master.json.printall')
+            elif argv[1] in ['--debug', '--showinformation', '--info', '-?', ]:
+                for i in debuginfo:
+                    print(i + debuginfo[i])
+            else: print('Invalid Argument ' + str(argv[1]))
+        elif len(argv) == 3:
+            if argv[1] in ['-l', '-L','--load']:printkey(argv[2])
+            elif argv[1] == ['-d', '-D','--delete']:
+                if input('Are you sure you want to delete the data of "' + argv[2] + '"? (Y/n) ') in ['Y', 'y']: delkey(argv[2])
+            else: print('Invalid list of arguments.\nExecute savekey -? to get more informations.')
+        elif len(argv) == 4:
+            if argv[1]in ['-s', '-S', '--save']:
+                addkey(argv[2], argv[3])
+            else: print('Invalid list of arguments.\nExecute savekey -? to get more informations.')
+        else:
+            print('Invalid list of arguments.\nExecute savekey -? to get more informations.')
+    except KeyError:
+        print('[Error] Tried to acces a key that does not exist. Terminating program...')
+        sys.exit(404)
     return 0
 
 if __name__ == '__main__':
-    from sys import argv as args
-    main(args)
+    main(sys.argv)
