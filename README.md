@@ -1,5 +1,6 @@
 # SaveKey
 A Command Line Tool wich can save and load strings. Like a notepad, just more minialistic.
+It is licensed under the ![https://img.shields.io/github/license/heschy2/savekey.svg?style=for-the-badge](https://github.com/heschy2/SaveKey/blob/main/LICENSE)
 
 ## Usage
 
