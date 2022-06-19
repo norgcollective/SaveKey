@@ -1,5 +1,15 @@
+![GitHub](https://img.shields.io/github/license/heschy2/savekey?style=for-the-badge)
+![GitHub last commit](https://img.shields.io/github/last-commit/heschy2/savekey?style=for-the-badge)
+![GitHub repo size](https://img.shields.io/github/repo-size/heschy2/savekey?style=for-the-badge)
+![GitHub issues](https://img.shields.io/github/issues-raw/heschy2/savekey?style=for-the-badge)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/heschy2/savekey?style=for-the-badge)
+![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/heschy2/savekey?include_prereleases&label=Pre-Releases&style=for-the-badge)
+![GitHub top language](https://img.shields.io/github/languages/top/heschy2/savekey?style=for-the-badge)
+![Author](https://img.shields.io/badge/Author-heschy-blue?style=for-the-badge)
+
 # SaveKey
 A Command Line Tool wich can save and load strings. Like a notepad, just more minialistic.
+
 
 ## Usage
 
