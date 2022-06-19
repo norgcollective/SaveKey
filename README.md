@@ -30,11 +30,11 @@ If you dont want to write `--save` or `--load`, then you can write `-s` or `-l`.
 
 | Short Parameter | Long Paramter | Function | Warnings |
 |--|--|--|--|
-| -?   | --help       | Show a help like this |  |
-| -v   | --version    | Terminates the application after the Welcome-screen |  |
-| -s   | --save       | Saves the Key |  |
-| -l   | --load       | Loads a key |  |
-| -d   | --delete     | Deletes a key |  |
+| -?   | --help       | Show a help like this | - **Not yet implemented**  |
+| -v   | --version    | Terminates the application after the Welcome-screen | - **Not yet implemented** |
+| -s   | --save       | Saves the Key | - **Not yet implemented** |
+| -l   | --load       | Loads a key | - **Not yet implemented** |
+| -d   | --delete     | Deletes a key | - **Not yet implemented** |
 | -r   | --reset      | Deletes any Key in the master.json file | - **Not yet implemented** |
 | -p   | --password   | Locks the -r Parameter with a password. | - **Not yet implemented** <br/> - **Password is saved in plain text** |
 | -chf | --switchfile | Saves into a different File instead of `master.json`. | - **Not yet implemented** |
