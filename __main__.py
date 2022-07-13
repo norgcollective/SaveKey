@@ -7,8 +7,8 @@ gi.require_version('Gtk','3.0')
 from gi.repository import Gtk
 
 NC_APPINFO = (
-    'SaveKey 1.0 by Norgcollective',
-    'de.norgcollective.savekey - v1.0'
+    'SaveKey 1.0 Alpha by Norgcollective',
+    'de.norgcollective.savekey - v1.0~alpha'
 );
 
 SaveKeyWriteAdd    = 'SK_ADDVALUE' 
@@ -93,13 +93,18 @@ class SaveKeyGui(Gtk.Window):
     def __init__(self):
         super().__init__(title="SaveKey")
         self.connect('destroy', Gtk.main_quit)
+        self.set_default_size(400,200)
         self.set_resizable(False)
+        self.set_border_width(3)
 
         self.create_savekey('default')
 
         self.stack = Gtk.Stack()
-        self.stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
+        self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
         self.stack.set_transition_duration(250)
+
+        ### Header Bar - Stackswitch ###############################
+        ############################################################
 
         self.stackswitch = Gtk.StackSwitcher()
         self.stackswitch.set_stack(self.stack)
@@ -110,7 +115,30 @@ class SaveKeyGui(Gtk.Window):
         self.bar.pack_start(self.stackswitch)
         self.set_titlebar(self.bar)
 
-        ### Save ###################################################
+        ### Header Bar - Hamburg Menu ##############################
+        ############################################################
+
+        self.popover_hamburger = Gtk.Popover()
+        self.popover_hamburger.set_position(Gtk.PositionType.BOTTOM)
+
+        self.hamburger_menuvbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+
+        self.hamburger_info = Gtk.Label()
+        self.hamburger_info.set_text('SaveKey 1.0 Alpha')
+        self.hamburger_menuvbox.pack_start(self.hamburger_info, True, True, 0)
+
+        self.hamburger_cdbtn = Gtk.ModelButton(label="Switch Notebook")
+        self.hamburger_cdbtn.connect('clicked')
+
+        self.hamburger_menuvbox.set_border_width(10)
+        self.hamburger_menuvbox.show_all()
+        self.popover_hamburger.add(self.hamburger_menuvbox)
+
+        self.hamburger = Gtk.MenuButton(label="", popover=self.popover_hamburger)
+        self.hamburger.set_image(Gtk.Image.new_from_icon_name('open-menu-symbolic', Gtk.IconSize.MENU))
+        self.bar.pack_end(self.hamburger)
+
+        ### Stack - Save ###################################################
         ############################################################
 
         self.vbox_save = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
@@ -123,7 +151,7 @@ class SaveKeyGui(Gtk.Window):
         self.keyname_save.set_placeholder_text('Key Name')
         self.tbox_save.pack_start(self.keyname_save, True, True, 0)
 
-        self.btn_save = Gtk.Button.new_from_icon_name("document-save", Gtk.IconSize.MENU)
+        self.btn_save = Gtk.Button.new_from_icon_name("list-add-symbolic", Gtk.IconSize.MENU)
         self.btn_save.connect('clicked', self.savekey)
         self.tbox_save.pack_start(self.btn_save, True, True, 0)
         
@@ -131,7 +159,7 @@ class SaveKeyGui(Gtk.Window):
         self.keyvalue_save.set_placeholder_text('Value')
         self.vbox_save.pack_start(self.keyvalue_save, True, True, 0)
 
-        ### Load ###################################################
+        ### Stack - Load ###################################################
         ############################################################
 
         self.vbox_load = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
@@ -144,7 +172,7 @@ class SaveKeyGui(Gtk.Window):
         self.keyname_load.set_placeholder_text('Key Name')
         self.tbox_load.pack_start(self.keyname_load, True, True, 0)
 
-        self.btn_load = Gtk.Button.new_from_icon_name("document-open", Gtk.IconSize.MENU)
+        self.btn_load = Gtk.Button.new_from_icon_name("edit-find-symbolic", Gtk.IconSize.MENU)
         self.btn_load.connect('clicked', self.loadkey)
         self.tbox_load.pack_start(self.btn_load, True, True, 0)
         
@@ -153,19 +181,19 @@ class SaveKeyGui(Gtk.Window):
         self.keyvalue_load.set_editable(False)
         self.vbox_load.pack_start(self.keyvalue_load, True, True, 0)
 
-        ### Delete ###################################################
+        ### Stack - Delete ###################################################
         ##############################################################keyname_delete
 
-        self.vbox_delete = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
-        self.stack.add_titled(self.vbox_delete, 'delete', 'Delete')
+        self.box_delete = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=3)
+        self.stack.add_titled(self.box_delete, 'delete', 'Delete')
 
         self.keyname_delete = Gtk.Entry()
         self.keyname_delete.set_placeholder_text('Key Name')
-        self.vbox_delete.pack_start(self.keyname_delete, True, True, 0)
+        self.box_delete.pack_start(self.keyname_delete, True, True, 0)
 
-        self.btn_delete = Gtk.Button.new_from_icon_name("edit-delete", Gtk.IconSize.MENU)
+        self.btn_delete = Gtk.Button.new_from_icon_name("user-trash-symbolic", Gtk.IconSize.MENU)
         self.btn_delete.connect('clicked', self.deletekey)
-        self.vbox_delete.pack_start(self.btn_delete, True, True, 0)
+        self.box_delete.pack_start(self.btn_delete, True, True, 0)
 
         self.add(self.stack)
         self.show_all()
@@ -183,6 +211,9 @@ class SaveKeyGui(Gtk.Window):
             os.system("notify-send --app-name=savekey 'Savekey: Key is empty' -i dialog-warning")
     def deletekey(self, widget):
         self.sk.write(SaveKeyWriteDelete, {'name':self.keyname_delete.get_text()})
+    def switchfile(self, widget):
+        
+
 
 
 def info(txt, title, conf, exit=False): 
@@ -193,17 +224,6 @@ def info(txt, title, conf, exit=False):
         print(txt)
     if exit:
         sys.exit(0)
-
-class entrywin(Gtk.Window):
-    pass
-
-def entry(txt, title, conf): 
-    if props['IsGuiMode']:
-        MainWindow = entrywin(txt, title)
-        Gtk.main()
-    else:
-        return input(txt)
-
 
 if __name__ == '__main__':
     props = {
@@ -236,7 +256,7 @@ if __name__ == '__main__':
     # Start Application          ##########################################################################
     #######################################################################################################
 
-    if props['ShowWelcomeScreen']:
+    if props['ShowWelcomeScreen'] and not props['IsGuiMode']:
         print('NorgCollective SaveKey\n')
     
     if props["IsGuiMode"]:
