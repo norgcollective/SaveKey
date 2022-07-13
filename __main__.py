@@ -103,8 +103,8 @@ class SaveKeyGui(Gtk.Window):
         self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
         self.stack.set_transition_duration(250)
 
-        ### Header Bar - Stackswitch ###############################
-        ############################################################
+        ### Header Bar - Stackswitch #########################################
+        ######################################################################
 
         self.stackswitch = Gtk.StackSwitcher()
         self.stackswitch.set_stack(self.stack)
@@ -115,8 +115,8 @@ class SaveKeyGui(Gtk.Window):
         self.bar.pack_start(self.stackswitch)
         self.set_titlebar(self.bar)
 
-        ### Header Bar - Hamburg Menu ##############################
-        ############################################################
+        ### Header Bar - Hamburg Menu ########################################
+        ######################################################################
 
         self.popover_hamburger = Gtk.Popover()
         self.popover_hamburger.set_position(Gtk.PositionType.BOTTOM)
@@ -139,7 +139,7 @@ class SaveKeyGui(Gtk.Window):
         self.bar.pack_end(self.hamburger)
 
         ### Stack - Save ###################################################
-        ############################################################
+        ######################################################################
 
         self.vbox_save = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
         self.stack.add_titled(self.vbox_save, 'save', 'Save')
@@ -160,7 +160,7 @@ class SaveKeyGui(Gtk.Window):
         self.vbox_save.pack_start(self.keyvalue_save, True, True, 0)
 
         ### Stack - Load ###################################################
-        ############################################################
+        ######################################################################
 
         self.vbox_load = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
         self.stack.add_titled(self.vbox_load, 'load', 'Load')
@@ -182,7 +182,7 @@ class SaveKeyGui(Gtk.Window):
         self.vbox_load.pack_start(self.keyvalue_load, True, True, 0)
 
         ### Stack - Delete ###################################################
-        ##############################################################keyname_delete
+        ######################################################################
 
         self.box_delete = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=3)
         self.stack.add_titled(self.box_delete, 'delete', 'Delete')
@@ -212,7 +212,7 @@ class SaveKeyGui(Gtk.Window):
     def deletekey(self, widget):
         self.sk.write(SaveKeyWriteDelete, {'name':self.keyname_delete.get_text()})
     def switchfile(self, widget):
-        
+        pass
 
 
 
