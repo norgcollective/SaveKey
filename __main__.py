@@ -7,8 +7,9 @@ gi.require_version('Gtk','3.0')
 from gi.repository import Gtk
 
 NC_APPINFO = (
-    'SaveKey 1.0 Alpha by Norgcollective',
-    'de.norgcollective.savekey - v1.0~alpha'
+    'SaveKey 1.0 Alpha',
+    'de.norgcollective.savekey - v1.0~alpha',
+    '1.0 Alpha'
 );
 
 SaveKeyWriteAdd    = 'SK_ADDVALUE' 
@@ -29,12 +30,6 @@ class SaveKey():
                 if bool(buffer.get(keyprop['name'])):
                     b = input('Key already exists. Do you want to overwrite it (Y/n)? ')
                     if b.upper() not in ('Y', 'YES','J','JA'):
-                        return 'CANCELED_BY_USER'
-            else:
-                if bool(buffer.get(keyprop['name'])):
-                    dlg = Gtk.MessageDialog(parent=None, flags=0,message_type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.YES_NO,text='Key Already exists. Do you want to overwrite it?')
-                    b = dlg.run()
-                    if b == -9:
                         return 'CANCELED_BY_USER'
             buffer[keyprop['name']] = keyprop['value']
             
@@ -62,12 +57,14 @@ class SaveKey():
             print("[Error] SaveKey.write has no '" + str(mode) + "' mode.")
             return 'ModeError'
         
+    def exists(self, keyname):
+        if bool(self.dict.get(keyname)): return True
+        else: return False
 
     def read(self, keyname):
-        if bool(self.dict.get(keyname)):
+        if self.exists(keyname):
             return self.dict[keyname]
-        else: 
-            print('Key Empty')
+        else:
             return False
 
 class infowin(Gtk.Window):
@@ -93,7 +90,7 @@ class SaveKeyGui(Gtk.Window):
     def __init__(self):
         super().__init__(title="SaveKey")
         self.connect('destroy', Gtk.main_quit)
-        self.set_default_size(400,200)
+        self.set_default_size(200,75)
         self.set_resizable(False)
         self.set_border_width(3)
 
@@ -111,6 +108,8 @@ class SaveKeyGui(Gtk.Window):
 
         self.bar = Gtk.HeaderBar()
         self.bar.set_show_close_button(True)
+        self.bar.set_has_subtitle(True)
+        self.bar.set_subtitle(NC_APPINFO[2])
         self.bar.props.title = self.get_title()
         self.bar.pack_start(self.stackswitch)
         self.set_titlebar(self.bar)
@@ -121,24 +120,31 @@ class SaveKeyGui(Gtk.Window):
         self.popover_hamburger = Gtk.Popover()
         self.popover_hamburger.set_position(Gtk.PositionType.BOTTOM)
 
-        self.hamburger_menuvbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.hamburger_menuvbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
 
         self.hamburger_info = Gtk.Label()
-        self.hamburger_info.set_text('SaveKey 1.0 Alpha')
+        self.hamburger_info.set_text(NC_APPINFO[0])
         self.hamburger_menuvbox.pack_start(self.hamburger_info, True, True, 0)
 
         self.hamburger_cdbtn = Gtk.ModelButton(label="Switch Notebook")
-        self.hamburger_cdbtn.connect('clicked')
+        self.hamburger_cdbtn.connect('clicked', self.switchfile)
+        self.hamburger_cdbtn.set_image(Gtk.Image.new_from_icon_name('view-continuous-symbolic',Gtk.IconSize.MENU))
+        self.hamburger_menuvbox.pack_start(self.hamburger_cdbtn, True, True, 0)
+
+        self.hamburger_aboutbtn = Gtk.ModelButton(label="About Savekey")
+        self.hamburger_aboutbtn.connect('clicked', self.about)
+        self.hamburger_aboutbtn.set_image(Gtk.Image.new_from_icon_name('view-continuous-symbolic',Gtk.IconSize.MENU))
+        self.hamburger_menuvbox.pack_start(self.hamburger_aboutbtn, True, True, 0)
 
         self.hamburger_menuvbox.set_border_width(10)
         self.hamburger_menuvbox.show_all()
         self.popover_hamburger.add(self.hamburger_menuvbox)
 
         self.hamburger = Gtk.MenuButton(label="", popover=self.popover_hamburger)
-        self.hamburger.set_image(Gtk.Image.new_from_icon_name('open-menu-symbolic', Gtk.IconSize.MENU))
+        self.hamburger.set_image(Gtk.Image.new_from_icon_name('view-more-symbolic', Gtk.IconSize.MENU))
         self.bar.pack_end(self.hamburger)
 
-        ### Stack - Save ###################################################
+        ### Stack - Save #####################################################
         ######################################################################
 
         self.vbox_save = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
@@ -159,7 +165,7 @@ class SaveKeyGui(Gtk.Window):
         self.keyvalue_save.set_placeholder_text('Value')
         self.vbox_save.pack_start(self.keyvalue_save, True, True, 0)
 
-        ### Stack - Load ###################################################
+        ### Stack - Load #####################################################
         ######################################################################
 
         self.vbox_load = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
@@ -201,27 +207,112 @@ class SaveKeyGui(Gtk.Window):
         self.book = book
         self.sk = SaveKey(os.environ.get('HOME') + '/.local/share/savekey/notebooks/' + self.book + '.json')
 
-    def savekey(self, widget):
-        self.sk.write(SaveKeyWriteAdd,{'name':self.keyname_save.get_text(),'value':self.keyvalue_save.get_text()}, True)
+    def savekey(self, widget): # Dialogs: dialogow (DialogOverWrite) and dialoginfo (DialogInformation)
+
+        if not bool(self.keyvalue_save.get_text()) or not bool(self.keyvalue_save.get_text()):
+            dlgerr = Gtk.MessageDialog(parent=self, modal=True, destroy_with_parent=True,message_type=Gtk.MessageType.ERROR,buttons=Gtk.ButtonsType.OK,text='Name or Value is empty')
+            dlgerr.run()
+            dlgerr.destroy()
+            return False
+
+
+        if self.sk.exists(self.keyname_save.get_text()) is not False:
+            dlgow = Gtk.MessageDialog(parent=self, modal=True, destroy_with_parent=True,message_type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.YES_NO,text='Key Already exists. Do you want to overwrite it?')
+            dlgowbuffer = dlgow.run()
+            dlgow.destroy()
+
+            if dlgowbuffer == -9:
+                return False
+            elif dlgowbuffer == -8:
+                self.sk.write(SaveKeyWriteAdd,{'name':self.keyname_save.get_text(),'value':self.keyvalue_save.get_text()}, True)
+                dlginfo = Gtk.MessageDialog(parent=self, modal=True, destroy_with_parent=True,message_type=Gtk.MessageType.INFO,buttons=Gtk.ButtonsType.OK,text='Key has been saved.')
+                dlginfo.run()
+                dlginfo.destroy()
+
     def loadkey(self, widget):
+
+        if not bool(self.keyname_load.get_text()):
+            dlgerr = Gtk.MessageDialog(parent=self, modal=True, destroy_with_parent=True,message_type=Gtk.MessageType.ERROR,buttons=Gtk.ButtonsType.OK,text='Name is empty')
+            dlgerr.run()
+            dlgerr.destroy()
+            return False
+
         skbuffer = self.sk.read(self.keyname_load.get_text())
         if bool(skbuffer):
             self.keyvalue_load.set_text(skbuffer)
         else:
-            os.system("notify-send --app-name=savekey 'Savekey: Key is empty' -i dialog-warning")
+            dlgwarn = Gtk.MessageDialog(parent=self, modal=True, destroy_with_parent=True,message_type=Gtk.MessageType.WARNING,buttons=Gtk.ButtonsType.OK,text='The Key does not exist or is empty.')
+            dlgwarn.run()
+            dlgwarn.destroy()
     def deletekey(self, widget):
         self.sk.write(SaveKeyWriteDelete, {'name':self.keyname_delete.get_text()})
     def switchfile(self, widget):
-        pass
+        self.cd = None
+        self.cd = {
+            'win'   : Gtk.Dialog(),
+            'entry' : Gtk.Entry(),
+            'btnok' : Gtk.Button.new_from_icon_name("document-open-symbolic", Gtk.IconSize.MENU),
+            'label' : Gtk.Label(),
+            'vbox'  : Gtk.Box(orientation=Gtk.Orientation.VERTICAL),
+            'hbox'  : Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        }
+
+        self.cd['entry'].set_placeholder_text('Notebook Name')
+        self.cd['btnok'].connect('clicked', self.switch_yes)
+
+        self.cd['hbox'].pack_start(self.cd['entry'], True, True, 0)
+        self.cd['hbox'].pack_start(self.cd['btnok'], True, True, 0)
+
+        self.cd['vbox'].pack_start(self.cd['label'], True, True, 0)
+        self.cd['vbox'].pack_start(self.cd['hbox'], True, True, 0)
+
+        self.cd['vbox'].show_all()
+        
+        self.cd['win'].add(self.cd['vbox'])
+        self.cd['win'].show_all()
+        self.cd['win'].run()
+
+    def switch_yes(self, widget):
+        self.create_savekey(book=str(self.cd['entry'].get_text()))
+
+    def about(self, widget):
+        self.aboutdlg = Gtk.AboutDialog()
+        self.aboutdlg.set_program_name('SaveKey')
+        self.aboutdlg.set_version('1.0 Alpha')
+        self.aboutdlg.set_authors(
+            ['Henry Schynol']
+        )
+
+        self.aboutdlg.run()
+        self.aboutdlg.destroy()
+        
+
+
+def info(txt, msgtype, conf, exit=False): 
+    if conf['IsGuiMode']:
+        msg = Gtk.MessageType.INFO
+
+        if type(txt) is type(dict()):
+            txt = txt['gtk']
+
+        if msgtype == 'warning': msg = Gtk.MessageType.WARNING
+        elif msgtype == 'error': msg = Gtk.MessageType.ERROR
+
+        dlg = Gtk.MessageDialog(parent=None, modal=True, message_type=msg,buttons=Gtk.ButtonsType.CLOSE,text=txt)
 
 
 
-def info(txt, title, conf, exit=False): 
-    if props['IsGuiMode']:
-        MainWindow = infowin(txt, title)
-        Gtk.main()
+        dlg.run()
+        dlg.destroy()
     else:
-        print(txt)
+
+        if type(txt) is type(dict()):
+            txt = txt['cli']
+
+        if msgtype == 'warning': print('[Warning]' + txt)
+        elif msgtype == 'info':  print(txt)
+        elif msgtype == 'error': print('[Error]' + txt)
+        else: print(txt)
     if exit:
         sys.exit(0)
 
@@ -232,23 +323,59 @@ if __name__ == '__main__':
         "OnlyShowVersion": False,
         "CheckFiles": True
     };
+
+    abnormalstartup = False
+
+    if '--version' in sys.argv:
+        props['OnlyShowVersion'] = True
+        abnormalstartup = True
     
+    if '--docs-cli' in sys.argv: 
+        os.system('xdg-open https://github.com/norgcollective/SaveKey/wiki/Command-Line-Interface')
+        abnormalstartup = True
+    elif '--docs-gui' in sys.argv: 
+        os.system('xdg-open https://github.com/norgcollective/SaveKey/wiki/Graphical-User-Interface')
+        abnormalstartup = True
+    elif '--docs' in sys.argv:
+        os.system('xdg-open https://github.com/norgcollective/SaveKey/wiki/Home')
+        abnormalstartup = True
+
     if '--enable-gtk' in sys.argv:
         props["IsGuiMode"] = True;
+    
+    if '--help' in sys.argv:
+        info(
+            txt={'gtk':'\tHelp for ' + NC_APPINFO[0] + '\n\n--enable-gtk   - Launch Savekeys GTK3 GUI (Graphical User Interface) instead of the CLI (Command Line Interface)\n\n--hide-welcome - Hid the default Welcome/Goodbye Messages.\n\n--version      - Terminate Application after Displaying version information\n\n--skip-check   - Skip the Startup Check. It is not reccomended to do so, because it might cause critical errors. \n\n--help         - Show this help\n\n--docs         - Opens the Documentation  in your Webbrowser.\n\n--docs-gui     - Opens the specific part of the documentation, wich is about the GUI, in your Webbrowser.\n\n--docs-cli     - Opens the specific part of the documentation, wich is about the CLI, in your Webbrowser.\n\n\nIt is not important to pass the parameters in a specific order.\n\nSome parameters might prevent the application from using the other parameters.',
+                'cli':'Help for ' + NC_APPINFO[0] + '\n\t\t--enable-gtk   - Launch Savekeys GTK3 GUI (Graphical User Interface) instead of the CLI (Command Line Interface)\n\t\t--hide-welcome - Hid the default Welcome/Goodbye Messages.\n\t\t--version      - Terminate Application after Displaying version information\n[Critical]\t--skip-check   - Skip the Startup Check. It is not reccomended to do so, because it might cause critical errors. \n\t\t--help         - Show this help\n\t\t--docs         - Opens the Documentation  in your Webbrowser.\n[Specific]\t--docs-gui     - Opens the specific part of the documentation, wich is about the GUI, in your Webbrowser.\n[Specific]\t--docs-cli     - Opens the specific part of the documentation, wich is about the CLI, in your Webbrowser.\n\n\nIt is not important to pass the parameters in a specific order.\nSome parameters might prevent the application from using the other parameters.'},
+            msgtype='info',
+            conf=props,
+            exit=True
+        )
+    elif props['OnlyShowVersion']:
+        info(
+            txt=NC_APPINFO[0], 
+            msgtype='info',
+            conf=props, 
+            exit=True
+        )
+
+    if abnormalstartup:
+        sys.exit(0)
+    
+    
     if '--hide-welcome' in sys.argv:
         props["ShowWelcomeScreen"] = False;
-    elif '--version' in sys.argv:
-        props['OnlyShowVersion'] = True
     if '--skip-check' in sys.argv:
         props['CheckFiles'] = False
     # Property reading finished. ##########################################################################
     #######################################################################################################
 
-    if props['OnlyShowVersion']:
-        info(NC_APPINFO[0], 'SaveKey',conf=props, exit=True)
-
     if not props.get('CheckFiles'):
-        info('[Warning] It is dangerous to skip the default startup check.','Warning', conf=props)
+        info(
+            txt='It is dangerous to skip the default startup check.',
+            msgtype='warning', 
+            conf=props
+        )
     else:
         pass
 
@@ -257,7 +384,7 @@ if __name__ == '__main__':
     #######################################################################################################
 
     if props['ShowWelcomeScreen'] and not props['IsGuiMode']:
-        print('NorgCollective SaveKey\n')
+        print('Welcome to the NorgCollective SaveKey CLI!\n')
     
     if props["IsGuiMode"]:
         MainWin = SaveKeyGui()
@@ -303,6 +430,6 @@ if __name__ == '__main__':
             elif entry[0:3] == 'rm ':
                 sk.write(SaveKeyWriteDelete, {'name':entry[3:len(entry)]})
             elif entry in sig_stop:
-                print('Goodbye, see you later!')
+                if props['ShowWelcomeScreen']: print('Goodbye, see you later!')
             else:
                 print('[Error] Unknown Command "' + entry + '". Savekey will ignore this Command.')
