@@ -8,9 +8,9 @@ gi.require_version('Gtk','3.0')
 from gi.repository import Gtk
 
 NC_APPINFO = (
-    'SaveKey 1.0 Alpha',
+    'SaveKey 1.0',
     'de.norgcollective.savekey',
-    '1.0 Alpha'
+    '1.0'
 );
 
 SaveKeyWriteAdd    = 'SK_ADDVALUE' 
@@ -118,7 +118,7 @@ class SaveKeyGui(Gtk.Window):
         self.bar = Gtk.HeaderBar()
         self.bar.set_show_close_button(True)
         self.bar.set_has_subtitle(True)
-        self.bar.set_subtitle(NC_APPINFO[2])
+        self.bar.set_subtitle("Version " + NC_APPINFO[2])
         self.bar.props.title = self.get_title()
         self.bar.pack_start(self.stackswitch)
         self.set_titlebar(self.bar)
@@ -552,7 +552,7 @@ class SaveKeyGui(Gtk.Window):
 
         self.aboutdlg = Gtk.AboutDialog(parent=self, modal=True, destroy_with_parent=True)
         self.aboutdlg.set_program_name('SaveKey')
-        self.aboutdlg.set_version('1.0 Alpha')
+        self.aboutdlg.set_version(NC_APPINFO[2])
         self.aboutdlg.set_authors(
             ['Henry Schynol']
         )
