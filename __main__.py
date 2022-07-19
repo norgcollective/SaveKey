@@ -131,13 +131,8 @@ class SaveKeyGui(Gtk.Window):
 
         self.hamburger_menuvbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
 
-        self.hamburger_info = Gtk.Label()
-        self.hamburger_info.set_text(NC_APPINFO[0])
-        self.hamburger_menuvbox.pack_start(self.hamburger_info, True, True, 0)
-
-        self.hamburger_cdbtn = Gtk.ModelButton(label="Switch Notebook")
-        self.hamburger_cdbtn.connect('clicked', self.switchfile)
-        self.hamburger_cdbtn.set_image(Gtk.Image.new_from_icon_name('view-continuous-symbolic',Gtk.IconSize.MENU))
+        self.hamburger_cdbtn = Gtk.ModelButton(label="Quit Application")
+        self.hamburger_cdbtn.connect('clicked', Gtk.main_quit)
         self.hamburger_menuvbox.pack_start(self.hamburger_cdbtn, True, True, 0)
 
         self.hamburger_aboutbtn = Gtk.ModelButton(label="About Savekey")
@@ -221,29 +216,182 @@ class SaveKeyGui(Gtk.Window):
         self.hbox_bookctrl = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.vbox_bookctrl = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
+        self.btnnew_ctrl   = Gtk.Button(label="Create New Notebook")
+        self.btnnew_ctrl.connect('clicked', self.newbook)
 
+        self.btndel_ctrl   = Gtk.Button(label="Delete Notebook")
+        self.btndel_ctrl.connect('clicked',self.delbook)
+        if self.book == 'default':
+            self.btndel_ctrl.set_sensitive(False)
+            self.btndel_ctrl.set_tooltip_text('You cannot delete this notebook')
+        else: 
+            self.btndel_ctrl.set_sensitive(True)
+            self.btndel_ctrl.set_tooltip_text('This will delete the "' + self.book + '.json" notebook.')
+
+        self.btncd_ctrl    = Gtk.Button(label="Switch notebook")
+        self.btncd_ctrl.connect('clicked',self.switchfile)
+
+        self.vbox_bookctrl.pack_start(self.btnnew_ctrl,True,True,3)
+        self.vbox_bookctrl.pack_start(self.btncd_ctrl, True,True,3)
+        self.vbox_bookctrl.pack_start(self.btndel_ctrl,True,True,3)
         self.hbox_bookctrl.pack_start(self.metadatainfolabel, True, True, 3)
         self.hbox_bookctrl.pack_start(self.vbox_bookctrl, True, True, 0)
         self.stack.add_titled(self.hbox_bookctrl, 'bookctrl', 'Book Controls')
 
+        ### Window - Finished ################################################
+        ######################################################################
+
         self.add(self.stack)
         self.show_all()
 
+    def delbook(self, widget):
+        if self.book != 'default':
+            dlgwarn = Gtk.MessageDialog(
+                parent=self,
+                modal=True,
+                destroy_with_parent=True,
+                message_type=Gtk.MessageType.WARNING,
+                buttons=Gtk.ButtonsType.OK_CANCEL,
+                text="This will delete the '" + self.book + "' notebook, are you sure that you want to do that?"
+            )
+            dlgwarn.format_secondary_text('This cannot be undone!')
+            response = dlgwarn.run()
+            dlgwarn.destroy()
+
+            if response == -6:
+                return False
+
+            if os.path.exists(os.environ.get('HOME') + '/.local/share/savekey/notebooks/' + self.book + '.json'):
+                os.remove(os.environ.get('HOME') + '/.local/share/savekey/notebooks/' + self.book + '.json')
+
+            self.create_savekey('default')
+
+        else:
+            dlgwarn = Gtk.MessageDialog(
+                parent=self,
+                modal=True,
+                destroy_with_parent=True,
+                message_type=Gtk.MessageType.WARNING,
+                buttons=Gtk.ButtonsType.OK_CANCEL,
+                text="You cannot delete the default Notebook."
+            )
+            dlgwarn.run()
+            dlgwarn.destroy()
+            return False
+
+        
+
+    def newbook(self, widget):
+
+
+        dlgwarn = Gtk.MessageDialog(
+            parent=self,
+            modal=True,
+            destroy_with_parent=True,
+            message_type=Gtk.MessageType.WARNING,
+            buttons=Gtk.ButtonsType.OK_CANCEL,
+            text="This might overwrite an existent Notebook, are you sure that you want to do that?"
+        )
+        response = dlgwarn.run()
+        dlgwarn.destroy()
+
+        if response == -6:
+            return False
+
+        self.mkdir = None
+        self.mkdir = {
+            'win'   : Gtk.Dialog(
+                parent=self,
+                modal=True,
+                destroy_with_parent=True,
+            ),
+            'entry' : Gtk.Entry(),
+            'btnok' : Gtk.Button.new_from_icon_name("document-open-symbolic", Gtk.IconSize.MENU),
+            'btnno' : Gtk.Button(label='Cancel'),
+            'label' : Gtk.Label(),
+            'bar'   : Gtk.HeaderBar(),
+            'vbox'  : None,
+            'hbox'  : Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        }
+
+        self.mkdir['bar'].set_show_close_button(True)
+        self.mkdir['bar'].set_has_subtitle(True)
+        self.mkdir['bar'].set_subtitle('Create a new Notebook')
+        self.mkdir['bar'].props.title = "Savekey"
+        self.mkdir['bar'].pack_start(self.mkdir['btnno'])
+        self.mkdir['bar'].pack_end(self.mkdir['btnok'])
+        self.mkdir['win'].set_titlebar(self.mkdir['bar'])
+
+
+        self.mkdir['win'].set_border_width(3)
+        self.mkdir['vbox'] = self.mkdir['win'].get_content_area()
+        self.mkdir['vbox'].set_spacing(5)
+
+        self.mkdir['label'].set_text('Please enter the Notebook name: ')
+
+        self.mkdir['entry'].set_placeholder_text('Notebook Name')
+        self.mkdir['entry'].connect('activate', self.new_yes)
+
+        self.mkdir['btnok'].connect('clicked', self.new_yes)
+        self.mkdir['btnok'].set_label(' Open')
+
+        self.mkdir['btnno'].connect('clicked', self.new_no)
+
+        self.mkdir['vbox'].pack_start(self.mkdir['label'], True, True, 0)
+        self.mkdir['vbox'].pack_start(self.mkdir['entry'], True, True, 0)
+
+        self.mkdir['vbox'].show_all()
+        
+        self.mkdir['win'].show_all()
+        self.mkdir['win'].run()
+        self.mkdir['win'].destroy()
+
+    def new_yes(self, widget):
+        r = True
+        try:
+            newbook = open(os.environ['HOME'] + '/.local/share/savekey/notebooks/' + self.mkdir['entry'].get_text() + '.json', 'w')
+            newbook.write(
+                json.dumps(
+                    {
+                        'Metadata': {
+                            "creator":os.environ.get('USER'),
+                            "Encrypted":False
+                        }
+                    }
+                )
+            )
+            newbook.close()
+            self.create_savekey(self.mkdir['entry'].get_text())
+        except:
+            dlgerr = Gtk.MessageDialog(parent=self, modal=True, destroy_with_parent=True,message_type=Gtk.MessageType.ERROR,buttons=Gtk.ButtonsType.OK,text='Error occured')
+            dlgerr.format_secondary_text("SaveKey was unable to create the new notebook, because of an error")
+            dlgerr.run()
+            dlgerr.destroy()
+            r = False
+        else:
+            self.mkdir['win'].destroy()
+        finally:
+            return r
+
+    def new_no(self, widget):
+        self.mkdir['win'].destroy()
+        self.mkdir = None
+
     def loadbookctrl(self):
         data = self.sk.read('Metadata')
-        msg  = 'Notebook has been <u>created</u> by {author}\nNotebook is <b>{cryptstatus}</b>'
+        msg  = 'Notebook is saved in <i>{book}.json</i>\nNotebook has been <u>created</u> by {author}\nNotebook is <b>{cryptstatus}</b>'
         iscrypt = ('not encrypted', 'encrypted')
 
         if type(data) is not type(dict()):
-            dlgerr = Gtk.MessageDialog(parent=self, modal=True, destroy_with_parent=True,message_type=Gtk.MessageType.ERROR,buttons=Gtk.ButtonsType.OK,text='Unable to Access Metadata key.')
+            dlgerr = Gtk.MessageDialog(parent=self, modal=True, destroy_with_parent=True,message_type=Gtk.MessageType.WARNING,buttons=Gtk.ButtonsType.OK,text='Unable to Access Metadata key.')
             dlgerr.format_secondary_text("This notebook may be damaged.")
             dlgerr.run()
             dlgerr.destroy()
-            self.metadatainfolabel.set_markup('<b>Warning: </b>Unable to load the Metadata Key of the current Notebook.')
+            self.metadatainfolabel.set_markup('<b>Warning: </b>Unable to load the Metadata Key of the current Notebook (<i>' + self.book + '.json</i>).')
             return False
 
         else:
-            msg = msg.format(author=data.get('creator'), cryptstatus=iscrypt[data.get('Encrypted')])
+            msg = msg.format(book=self.book,author=data.get('creator'), cryptstatus=iscrypt[data.get('Encrypted')])
         self.metadatainfolabel.set_markup(msg)
 
     def create_savekey(self, book):
@@ -371,7 +519,6 @@ class SaveKeyGui(Gtk.Window):
 
     def switch_no(self, widget):
         self.cd['win'].destroy()
-        self.cd = None
 
     def switch_yes(self, widget):
         r = True
@@ -386,11 +533,18 @@ class SaveKeyGui(Gtk.Window):
         else:
             self.cd['win'].destroy()
         finally:
+            if self.book == 'default':
+                self.btndel_ctrl.set_sensitive(False)
+                self.btndel_ctrl.set_tooltip_text('You cannot delete this notebook')
+            else: 
+                self.btndel_ctrl.set_sensitive(True)
+                self.btndel_ctrl.set_tooltip_text('This will delete the "' + self.book + '.json" notebook.')
             return r
 
     def about(self, widget):
 
         licensepath = '/usr/share/norgcollective/savekey/License'
+        if self.conf['DevState']: licensepath = '/home/heschy/Projekte/savekey/src/License' ######################################################################################################################################################################################## Delete this line in release builds
 
         f = open(licensepath)
         l = f.read()
@@ -457,7 +611,8 @@ if __name__ == '__main__':
         "ShowWelcomeScreen": True,
         "OnlyShowVersion": False,
         "CheckFiles": True,
-        "ShowLogOfStartupCheck": False
+        "ShowLogOfStartupCheck": False,
+        "DevState": False
     };
 
     abnormalstartup = False
@@ -505,6 +660,8 @@ if __name__ == '__main__':
         props['CheckFiles'] = False
     elif '--log-check' in sys.argv:
         props['ShowLogOfStartupCheck'] = True;
+    if '--dev' in sys.argv:
+        props['DevState'] = True
 
     # Property reading finished. ##########################################################################
     #######################################################################################################
