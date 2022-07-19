@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-from operator import ne
 import sys
 import json
 import gi
@@ -544,7 +543,6 @@ class SaveKeyGui(Gtk.Window):
     def about(self, widget):
 
         licensepath = '/usr/share/norgcollective/savekey/License'
-        if self.conf['DevState']: licensepath = '/home/heschy/Projekte/savekey/src/License' ######################################################################################################################################################################################## Delete this line in release builds
 
         f = open(licensepath)
         l = f.read()
@@ -611,8 +609,7 @@ if __name__ == '__main__':
         "ShowWelcomeScreen": True,
         "OnlyShowVersion": False,
         "CheckFiles": True,
-        "ShowLogOfStartupCheck": False,
-        "DevState": False
+        "ShowLogOfStartupCheck": False
     };
 
     abnormalstartup = False
@@ -636,8 +633,8 @@ if __name__ == '__main__':
     
     if '--help' in sys.argv:
         info(
-            txt={'gtk':'\tHelp for ' + NC_APPINFO[0] + '\n\n--enable-gtk   - Launch Savekeys GTK3 GUI (Graphical User Interface) instead of the CLI (Command Line Interface)\n\n--hide-welcome - Hid the default Welcome/Goodbye Messages.\n\n--version      - Terminate Application after Displaying version information\n\n--skip-check   - Skip the Startup Check. It is not reccomended to do so, because it might cause critical errors. \n\n--help         - Show this help\n\n--docs         - Opens the Documentation  in your Webbrowser.\n\n--docs-gui     - Opens the specific part of the documentation, wich is about the GUI, in your Webbrowser.\n\n--docs-cli     - Opens the specific part of the documentation, wich is about the CLI, in your Webbrowser.\n\n\nIt is not important to pass the parameters in a specific order.\n\nSome parameters might prevent the application from using the other parameters.',
-                'cli':'Help for ' + NC_APPINFO[0] + '\n\t\t--enable-gtk   - Launch Savekeys GTK3 GUI (Graphical User Interface) instead of the CLI (Command Line Interface)\n\t\t--hide-welcome - Hid the default Welcome/Goodbye Messages.\n\t\t--version      - Terminate Application after Displaying version information\n[Critical]\t--skip-check   - Skip the Startup Check. It is not reccomended to do so, because it might cause critical errors. \n\t\t--help         - Show this help\n\t\t--docs         - Opens the Documentation  in your Webbrowser.\n[Specific]\t--docs-gui     - Opens the specific part of the documentation, wich is about the GUI, in your Webbrowser.\n[Specific]\t--docs-cli     - Opens the specific part of the documentation, wich is about the CLI, in your Webbrowser.\n\n\nIt is not important to pass the parameters in a specific order.\nSome parameters might prevent the application from using the other parameters.'},
+            txt={'gtk':'\tHelp for ' + NC_APPINFO[0] + '\n\n--enable-gtk   - Launch Savekeys GTK3 GUI (Graphical User Interface) instead of the CLI (Command Line Interface)\n\n--hide-welcome - Hid the default Welcome/Goodbye Messages.\n\n--version      - Terminate Application after Displaying version information\n\n--skip-check   - Skip the Startup Check. It is not reccomended to do so, because it might cause critical errors. \n\n--help         - Show this help\n\n--docs         - Opens the Documentation  in your Webbrowser.\n\n--docs-gui     - Opens the specific part of the documentation, wich is about the GUI, in your Webbrowser.\n\n--docs-cli     - Opens the specific part of the documentation, wich is about the CLI, in your Webbrowser.\n\n--bug          - Report a bug\n\n\nIt is not important to pass the parameters in a specific order.\n\nSome parameters might prevent the application from using the other parameters.',
+                'cli':'Help for ' + NC_APPINFO[0] + '\n\t\t--enable-gtk   - Launch Savekeys GTK3 GUI (Graphical User Interface) instead of the CLI (Command Line Interface)\n\t\t--hide-welcome - Hid the default Welcome/Goodbye Messages.\n\t\t--version      - Terminate Application after Displaying version information\n[Critical]\t--skip-check   - Skip the Startup Check. It is not reccomended to do so, because it might cause critical errors. \n\t\t--help         - Show this help\n\t\t--docs         - Opens the Documentation  in your Webbrowser.\n[Specific]\t--docs-gui     - Opens the specific part of the documentation, wich is about the GUI, in your Webbrowser.\n[Specific]\t--docs-cli     - Opens the specific part of the documentation, wich is about the CLI, in your Webbrowser.\n[Important]\t--bug          - Report a bug\n\n\nIt is not important to pass the parameters in a specific order.\nSome parameters might prevent the application from using the other parameters.'},
             msgtype='info',
             conf=props,
             exit=True
@@ -653,6 +650,8 @@ if __name__ == '__main__':
     if abnormalstartup:
         sys.exit(0)
     
+    if '--bug' in sys.argv:
+        os.system('xdg-open https://github.com/norgcollective/SaveKey/issues')
     
     if '--hide-welcome' in sys.argv:
         props["ShowWelcomeScreen"] = False;
@@ -660,8 +659,6 @@ if __name__ == '__main__':
         props['CheckFiles'] = False
     elif '--log-check' in sys.argv:
         props['ShowLogOfStartupCheck'] = True;
-    if '--dev' in sys.argv:
-        props['DevState'] = True
 
     # Property reading finished. ##########################################################################
     #######################################################################################################
