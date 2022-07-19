@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+from operator import ne
 import sys
 import json
 import gi
@@ -8,7 +9,7 @@ from gi.repository import Gtk
 
 NC_APPINFO = (
     'SaveKey 1.0 Alpha',
-    'de.norgcollective.savekey - v1.0~alpha',
+    'de.norgcollective.savekey',
     '1.0 Alpha'
 );
 
@@ -58,12 +59,16 @@ class SaveKey():
             return 'ModeError'
         
     def exists(self, keyname):
-        if bool(self.dict.get(keyname)): return True
+        if bool(str(self.dict.get(keyname))): return True
         else: return False
 
     def read(self, keyname):
         if self.exists(keyname):
-            return self.dict[keyname]
+            
+            if not type(True) is type(self.dict.get(keyname)):
+                return self.dict.get(keyname)
+            else:
+                return str(self.dict.get(keyname))
         else:
             return False
 
@@ -87,12 +92,16 @@ class infowin(Gtk.Window):
         self.show_all()
 
 class SaveKeyGui(Gtk.Window):
-    def __init__(self):
+    def __init__(self, conf):
+        self.conf = conf
         super().__init__(title="SaveKey")
         self.connect('destroy', Gtk.main_quit)
-        self.set_default_size(200,75)
+        self.set_default_size(900,100)
         self.set_resizable(False)
         self.set_border_width(3)
+
+
+        self.metadatainfolabel = Gtk.Label() # This Variable needs to be defined BEFORE self.create_savekey('default') is executed. Otherwise, there will be errors.
 
         self.create_savekey('default')
 
@@ -133,7 +142,7 @@ class SaveKeyGui(Gtk.Window):
 
         self.hamburger_aboutbtn = Gtk.ModelButton(label="About Savekey")
         self.hamburger_aboutbtn.connect('clicked', self.about)
-        self.hamburger_aboutbtn.set_image(Gtk.Image.new_from_icon_name('view-continuous-symbolic',Gtk.IconSize.MENU))
+        self.hamburger_aboutbtn.set_image(Gtk.Image.new_from_icon_name('help-about-symbolic',Gtk.IconSize.MENU))
         self.hamburger_menuvbox.pack_start(self.hamburger_aboutbtn, True, True, 0)
 
         self.hamburger_menuvbox.set_border_width(10)
@@ -155,6 +164,7 @@ class SaveKeyGui(Gtk.Window):
 
         self.keyname_save = Gtk.Entry()
         self.keyname_save.set_placeholder_text('Key Name')
+        self.keyname_save.connect('activate', self.savekey)
         self.tbox_save.pack_start(self.keyname_save, True, True, 0)
 
         self.btn_save = Gtk.Button.new_from_icon_name("list-add-symbolic", Gtk.IconSize.MENU)
@@ -163,6 +173,7 @@ class SaveKeyGui(Gtk.Window):
         
         self.keyvalue_save = Gtk.Entry()
         self.keyvalue_save.set_placeholder_text('Value')
+        self.keyvalue_save.connect('activate', self.savekey)
         self.vbox_save.pack_start(self.keyvalue_save, True, True, 0)
 
         ### Stack - Load #####################################################
@@ -176,6 +187,7 @@ class SaveKeyGui(Gtk.Window):
 
         self.keyname_load = Gtk.Entry()
         self.keyname_load.set_placeholder_text('Key Name')
+        self.keyname_load.connect('activate', self.loadkey)
         self.tbox_load.pack_start(self.keyname_load, True, True, 0)
 
         self.btn_load = Gtk.Button.new_from_icon_name("edit-find-symbolic", Gtk.IconSize.MENU)
@@ -195,22 +207,62 @@ class SaveKeyGui(Gtk.Window):
 
         self.keyname_delete = Gtk.Entry()
         self.keyname_delete.set_placeholder_text('Key Name')
+        self.keyname_delete.connect('activate', self.deletekey)
         self.box_delete.pack_start(self.keyname_delete, True, True, 0)
 
         self.btn_delete = Gtk.Button.new_from_icon_name("user-trash-symbolic", Gtk.IconSize.MENU)
+
         self.btn_delete.connect('clicked', self.deletekey)
         self.box_delete.pack_start(self.btn_delete, True, True, 0)
 
+        ### Stack - BookCtrl #################################################
+        ######################################################################
+
+        self.hbox_bookctrl = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.vbox_bookctrl = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+
+
+        self.hbox_bookctrl.pack_start(self.metadatainfolabel, True, True, 3)
+        self.hbox_bookctrl.pack_start(self.vbox_bookctrl, True, True, 0)
+        self.stack.add_titled(self.hbox_bookctrl, 'bookctrl', 'Book Controls')
+
         self.add(self.stack)
         self.show_all()
+
+    def loadbookctrl(self):
+        data = self.sk.read('Metadata')
+        msg  = 'Notebook has been <u>created</u> by {author}\nNotebook is <b>{cryptstatus}</b>'
+        iscrypt = ('not encrypted', 'encrypted')
+
+        if type(data) is not type(dict()):
+            dlgerr = Gtk.MessageDialog(parent=self, modal=True, destroy_with_parent=True,message_type=Gtk.MessageType.ERROR,buttons=Gtk.ButtonsType.OK,text='Unable to Access Metadata key.')
+            dlgerr.format_secondary_text("This notebook may be damaged.")
+            dlgerr.run()
+            dlgerr.destroy()
+            self.metadatainfolabel.set_markup('<b>Warning: </b>Unable to load the Metadata Key of the current Notebook.')
+            return False
+
+        else:
+            msg = msg.format(author=data.get('creator'), cryptstatus=iscrypt[data.get('Encrypted')])
+        self.metadatainfolabel.set_markup(msg)
+
     def create_savekey(self, book):
         self.book = book
         self.sk = SaveKey(os.environ.get('HOME') + '/.local/share/savekey/notebooks/' + self.book + '.json')
+        self.loadbookctrl()
 
     def savekey(self, widget): # Dialogs: dialogow (DialogOverWrite) and dialoginfo (DialogInformation)
+        if self.keyname_save.get_text() == 'Metadata':
+            dlgerr = Gtk.MessageDialog(parent=self, modal=True, destroy_with_parent=True,message_type=Gtk.MessageType.ERROR,buttons=Gtk.ButtonsType.OK,text='Access denid')
+            dlgerr.format_secondary_text("This key is accessable only in readonly mode.")
+            dlgerr.run()
+            dlgerr.destroy()
+            return False
+        
 
         if not bool(self.keyvalue_save.get_text()) or not bool(self.keyvalue_save.get_text()):
             dlgerr = Gtk.MessageDialog(parent=self, modal=True, destroy_with_parent=True,message_type=Gtk.MessageType.ERROR,buttons=Gtk.ButtonsType.OK,text='Name or Value is empty')
+            dlgerr.format_secondary_text("Please add text to both fields.")
             dlgerr.run()
             dlgerr.destroy()
             return False
@@ -218,6 +270,7 @@ class SaveKeyGui(Gtk.Window):
 
         if self.sk.exists(self.keyname_save.get_text()) is not False:
             dlgow = Gtk.MessageDialog(parent=self, modal=True, destroy_with_parent=True,message_type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.YES_NO,text='Key Already exists. Do you want to overwrite it?')
+            dlgow.format_secondary_text("The current data will be lost.")
             dlgowbuffer = dlgow.run()
             dlgow.destroy()
 
@@ -233,59 +286,129 @@ class SaveKeyGui(Gtk.Window):
 
         if not bool(self.keyname_load.get_text()):
             dlgerr = Gtk.MessageDialog(parent=self, modal=True, destroy_with_parent=True,message_type=Gtk.MessageType.ERROR,buttons=Gtk.ButtonsType.OK,text='Name is empty')
+            dlgerr.format_secondary_text("Plese add a Name to the Textfield.")
             dlgerr.run()
             dlgerr.destroy()
             return False
 
         skbuffer = self.sk.read(self.keyname_load.get_text())
         if bool(skbuffer):
-            self.keyvalue_load.set_text(skbuffer)
+            if type(skbuffer) is type(str('string')):
+                self.keyvalue_load.set_text(skbuffer)
+            elif type(skbuffer) is type(dict()):
+                dlgmeta = Gtk.MessageDialog(parent=self, modal=True, destroy_with_parent=True,message_type=Gtk.MessageType.ERROR,buttons=Gtk.ButtonsType.CLOSE,text='Access denid')
+                dlgmeta.format_secondary_text("If you want to access the Metadata, you have to access the 'Book Controls' via the Main Window.")
+                dlgmeta.run()
+                dlgmeta.destroy()
+                self.keyvalue_load.set_text(str(skbuffer))
         else:
             dlgwarn = Gtk.MessageDialog(parent=self, modal=True, destroy_with_parent=True,message_type=Gtk.MessageType.WARNING,buttons=Gtk.ButtonsType.OK,text='The Key does not exist or is empty.')
+            dlgwarn.format_secondary_text("It may have been deleted.")
             dlgwarn.run()
             dlgwarn.destroy()
     def deletekey(self, widget):
-        self.sk.write(SaveKeyWriteDelete, {'name':self.keyname_delete.get_text()})
+        if self.keyname_delete.get_text() == 'Metadata': 
+            dlgerr = Gtk.MessageDialog(parent=self, modal=True, destroy_with_parent=True,message_type=Gtk.MessageType.ERROR,buttons=Gtk.ButtonsType.OK,text='You cannot delete the Metadata Key.')
+            dlgerr.format_secondary_text("This key is accessable only in readonly mode.")
+            dlgerr.run()
+            dlgerr.destroy()
+        elif not bool(self.keyname_delete.get_text()):
+            dlgerr = Gtk.MessageDialog(parent=self, modal=True, destroy_with_parent=True,message_type=Gtk.MessageType.ERROR,buttons=Gtk.ButtonsType.OK,text='Name is empty')
+            dlgerr.format_secondary_text("Plese add a Name to the Textfield.")
+            dlgerr.run()
+            dlgerr.destroy()
+            return False
+        else:
+            self.sk.write(SaveKeyWriteDelete, {'name':self.keyname_delete.get_text()})
     def switchfile(self, widget):
         self.cd = None
         self.cd = {
-            'win'   : Gtk.Dialog(),
+            'win'   : Gtk.Dialog(
+                parent=self,
+                modal=True,
+                destroy_with_parent=True,
+            ),
             'entry' : Gtk.Entry(),
             'btnok' : Gtk.Button.new_from_icon_name("document-open-symbolic", Gtk.IconSize.MENU),
+            'btnno' : Gtk.Button(label='Cancel'),
             'label' : Gtk.Label(),
-            'vbox'  : Gtk.Box(orientation=Gtk.Orientation.VERTICAL),
+            'bar'   : Gtk.HeaderBar(),
+            'vbox'  : None,
             'hbox'  : Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         }
 
-        self.cd['entry'].set_placeholder_text('Notebook Name')
-        self.cd['btnok'].connect('clicked', self.switch_yes)
+        self.cd['bar'].set_show_close_button(True)
+        self.cd['bar'].set_has_subtitle(True)
+        self.cd['bar'].set_subtitle('Switch Notebook')
+        self.cd['bar'].props.title = "Savekey"
+        self.cd['bar'].pack_start(self.cd['btnno'])
+        self.cd['bar'].pack_end(self.cd['btnok'])
+        self.cd['win'].set_titlebar(self.cd['bar'])
 
-        self.cd['hbox'].pack_start(self.cd['entry'], True, True, 0)
-        self.cd['hbox'].pack_start(self.cd['btnok'], True, True, 0)
+
+        self.cd['win'].set_border_width(3)
+        self.cd['vbox'] = self.cd['win'].get_content_area()
+        self.cd['vbox'].set_spacing(5)
+
+        self.cd['label'].set_text('Please enter the Notebook name: ')
+
+        self.cd['entry'].set_placeholder_text('Notebook Name')
+        self.cd['entry'].connect('activate', self.switch_yes)
+
+        self.cd['btnok'].connect('clicked', self.switch_yes)
+        self.cd['btnok'].set_label(' Open')
+
+        self.cd['btnno'].connect('clicked', self.switch_no)
 
         self.cd['vbox'].pack_start(self.cd['label'], True, True, 0)
-        self.cd['vbox'].pack_start(self.cd['hbox'], True, True, 0)
+        self.cd['vbox'].pack_start(self.cd['entry'], True, True, 0)
 
         self.cd['vbox'].show_all()
         
-        self.cd['win'].add(self.cd['vbox'])
         self.cd['win'].show_all()
         self.cd['win'].run()
+        self.cd['win'].destroy()
+
+    def switch_no(self, widget):
+        self.cd['win'].destroy()
+        self.cd = None
 
     def switch_yes(self, widget):
-        self.create_savekey(book=str(self.cd['entry'].get_text()))
+        r = True
+        try:
+            self.create_savekey(book=str(self.cd['entry'].get_text()))
+        except FileNotFoundError:
+            dlgerr = Gtk.MessageDialog(parent=self, modal=True, destroy_with_parent=True,message_type=Gtk.MessageType.ERROR,buttons=Gtk.ButtonsType.OK,text='File Not Found')
+            dlgerr.format_secondary_text("The file does not exist or savekey is not allowed to access it.")
+            dlgerr.run()
+            dlgerr.destroy()
+            r = False
+        else:
+            self.cd['win'].destroy()
+        finally:
+            return r
 
     def about(self, widget):
-        self.aboutdlg = Gtk.AboutDialog()
+
+        licensepath = '/usr/share/norgcollective/savekey/License'
+
+        f = open(licensepath)
+        l = f.read()
+        f.close()
+
+        self.aboutdlg = Gtk.AboutDialog(parent=self, modal=True, destroy_with_parent=True)
         self.aboutdlg.set_program_name('SaveKey')
         self.aboutdlg.set_version('1.0 Alpha')
         self.aboutdlg.set_authors(
             ['Henry Schynol']
         )
+        self.aboutdlg.set_comments("A simple Notebook Manager")
+        self.aboutdlg.set_website("https://norgcollective.github.io/SaveKey/")
+        self.aboutdlg.set_license(l)
 
         self.aboutdlg.run()
         self.aboutdlg.destroy()
-        
+
 
 
 def info(txt, msgtype, conf, exit=False): 
@@ -299,9 +422,6 @@ def info(txt, msgtype, conf, exit=False):
         elif msgtype == 'error': msg = Gtk.MessageType.ERROR
 
         dlg = Gtk.MessageDialog(parent=None, modal=True, message_type=msg,buttons=Gtk.ButtonsType.CLOSE,text=txt)
-
-
-
         dlg.run()
         dlg.destroy()
     else:
@@ -316,12 +436,28 @@ def info(txt, msgtype, conf, exit=False):
     if exit:
         sys.exit(0)
 
+def new(madebysys=False, name='default'):
+    author =  (os.environ['USER'], NC_APPINFO[1]  + '.startup.check', 'savekey')
+    newbook = open(os.environ['HOME'] + '/.local/share/savekey/notebooks/' + name + '.json', 'w')
+    newbook.write(
+        json.dumps(
+            {
+                'Metadata': {
+                    "creator":author[int(madebysys)],
+                    "Encrypted":False
+                }
+            }
+        )
+    )
+    newbook.close()
+
 if __name__ == '__main__':
     props = {
         "IsGuiMode": False,
         "ShowWelcomeScreen": True,
         "OnlyShowVersion": False,
-        "CheckFiles": True
+        "CheckFiles": True,
+        "ShowLogOfStartupCheck": False
     };
 
     abnormalstartup = False
@@ -367,6 +503,9 @@ if __name__ == '__main__':
         props["ShowWelcomeScreen"] = False;
     if '--skip-check' in sys.argv:
         props['CheckFiles'] = False
+    elif '--log-check' in sys.argv:
+        props['ShowLogOfStartupCheck'] = True;
+
     # Property reading finished. ##########################################################################
     #######################################################################################################
 
@@ -377,7 +516,21 @@ if __name__ == '__main__':
             conf=props
         )
     else:
-        pass
+        if not os.path.exists(os.environ['HOME'] + '/.local/share/savekey'):
+            os.makedirs(os.environ['HOME'] + '/.local/share/savekey')
+
+        if not os.path.exists(os.environ['HOME'] + '/.local/share/savekey/notebooks'):
+            os.makedirs(os.environ['HOME'] + '/.local/share/savekey/notebooks')
+        
+        try:
+            open(os.environ['HOME'] + '/.local/share/savekey/notebooks/default.json', 'x')
+        except FileExistsError:
+            if props['ShowLogOfStartupCheck']: print("[Log] File default.json exists")
+        else:
+            print("[Log] File default.json didn't exist. Created default.json and inserted standart Metadata")
+            new(madebysys=True)
+
+            
 
     
     # Start Application          ##########################################################################
@@ -387,7 +540,7 @@ if __name__ == '__main__':
         print('Welcome to the NorgCollective SaveKey CLI!\n')
     
     if props["IsGuiMode"]:
-        MainWin = SaveKeyGui()
+        MainWin = SaveKeyGui(props)
         Gtk.main()
     else:
         entry = None
@@ -420,13 +573,7 @@ if __name__ == '__main__':
                 book = entry[3:len(entry)]
                 sk = SaveKey(os.environ.get('HOME') + '/.local/share/savekey/notebooks/' + book + '.json')
             elif entry[0:6] == 'mkdir ': 
-                newbook = open(str(os.environ.get('HOME') + '/.local/share/savekey/notebooks/' + entry[6:len(entry)] + '.json'), 'w')
-                newbook.write(
-                    json.dumps(
-                        {'Metadata': {"creator":os.environ.get('USER')}}
-                    )
-                )
-                newbook.close()
+                new(name=entry[6:len(entry)], madebysys=2)
             elif entry[0:3] == 'rm ':
                 sk.write(SaveKeyWriteDelete, {'name':entry[3:len(entry)]})
             elif entry in sig_stop:
