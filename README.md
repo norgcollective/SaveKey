@@ -1,1 +1,1 @@
-There is no current Release.
+Current Release: 1.0 stable.
