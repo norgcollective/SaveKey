@@ -7,4 +7,25 @@
 ![GitHub top language](https://img.shields.io/github/languages/top/norgcollective/savekey?style=for-the-badge)
 ![Author](https://img.shields.io/badge/Author-norgcollective-blue?style=for-the-badge)
 
-We are currently working on this Readme, please wait a few days.
+# Savekey
+SaveKey is a lightweight app to create and edit simple notebooks. 
+
+## Releases
+
+# v1.0  
+Version 1.0 is the First Version and the last one that uses GTK3.    
+It might be the last one that offers a CLI.    
+
+
+### Version 1.0 includes:      
+  * Command Line Interface     
+  * GTK3 GUI          
+    
+
+# v2.x
+VERSION 2.0 IS NOT BASED ON VERSION 1.0   
+
+
+### Version 2.x includes:
+* Eventually a CLI 
+* GTK3+libadwaite GUI optimized for GNOME.      
