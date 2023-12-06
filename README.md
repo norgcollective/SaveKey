@@ -28,4 +28,4 @@ VERSION 2.0 IS NOT BASED ON VERSION 1.0
 
 ### Version 2.x includes:
 * Eventually a CLI 
-* GTK3+libadwaite GUI optimized for GNOME.      
+* GTK4+libadwaite GUI optimized for GNOME.      
