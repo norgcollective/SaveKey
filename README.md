@@ -23,7 +23,7 @@ Version 1.0 is the First Version and the last one that uses GTK3.
     
 
 ### Version 2
-Version 2 will be a rewrite of the original Application. It ***might*** also be written in Rust.
+Version 2 will be a rewrite of the original Application. It will be written in Rust.
 
 
 #### This Version includes:
@@ -34,3 +34,7 @@ Version 2 will be a rewrite of the original Application. It ***might*** also be 
 
 #### This Version might (not) include:
  * A flatpak release
+
+## Notes
+
+The Development of Version 2.0 will **not** start anytime soon, because I am still learning rust.
