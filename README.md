@@ -12,20 +12,25 @@ SaveKey is a lightweight app to create and edit simple notebooks.
 
 ## Releases
 
-# v1.0  
-Version 1.0 is the First Version and the last one that uses GTK3.    
-It might be the last one that offers a CLI.    
+### Version 1  
+Version 1.0 is the First Version and the last one that uses GTK3.      
 
 
-### Version 1.0 includes:      
-  * Command Line Interface     
-  * GTK3 GUI          
+#### This Version includes:      
+ * Command Line Interface     
+ * A GTK3 based Graphical User Interface
+ * A `.deb` release
     
 
-# v2.x
+### Version 2
 Version 2 will be a rewrite of the original Application. It ***might*** also be written in Rust.
 
 
-### Version 2.x includes:
-* Eventually a CLI 
-* GTK4+libadwaite GUI optimized for GNOME.      
+#### This Version includes:
+ * A Command Line Interface 
+ * A GTK4 based Graphical User Interface utilizing `libadwaita`
+ * A `.deb` release
+ * A `.rpm` release
+
+#### This Version might (not) include:
+ * A flatpak release
