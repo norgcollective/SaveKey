@@ -23,7 +23,7 @@ It might be the last one that offers a CLI.
     
 
 # v2.x
-VERSION 2.0 IS NOT BASED ON VERSION 1.0   
+Version 2 will be a rewrite of the original Application. It ***might*** also be written in Rust.
 
 
 ### Version 2.x includes:
