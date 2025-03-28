@@ -25,10 +25,9 @@ Version 1.0 is the First Version and the last one that uses GTK3.
 ### Version 2
 Version 2 will be a rewrite of the original Application. It will be written in Rust.
 
-
 #### This Version includes:
  * A Command Line Interface 
- * A GTK4 based Graphical User Interface utilizing `libadwaita`
+ * A Graphical User Interface using `libcosmic`
  * A `.deb` release
  * A `.rpm` release
 
